@@ -70,16 +70,28 @@ date_of_birth
 
 #some other use case of field validaror i found during a project 
 
-from pydantic import BaseModel, Field, ValidationInfo, field_validator
+from pydantic import BaseModel, EmailStr, SecretStr, field_validator, ValidationInfo, model_validator
 
-class UserSignupSchema(BaseModel):
-    password: str
-    password_confirm: str
+class User_signup_schema(BaseModel):
+    email : EmailStr
+    password : SecretStr
+    password_confirm : SecretStr
 
+    @model_validator(mode='after')
+    def email_available(cls, values):
+        email = values.email
+        if User.objects.filter(email=email).count()!=0:  
+            raise ValueError("Email is already registered")
+        return values
+    
     @field_validator("password_confirm")
     def password_match(cls, v, info: ValidationInfo):
         password = info.data.get('password')
-        if password != v:
-            raise ValueError("Passwords do not match")
+        password_confirm = v
+        if(password != password_confirm):
+            raise ValueError("Passwords don't match")
         return v
 
+class User_login_schema(BaseModel):
+    email : EmailStr
+    password : SecretStr
