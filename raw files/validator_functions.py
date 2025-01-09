@@ -64,3 +64,22 @@ date_of_birth
   Value error, To young [type=value_error, input_value='2010-08-22', input_type=str]
     For further information visit https://errors.pydantic.dev/2.10/v/value_error
 """
+
+
+
+
+#some other use case of field validaror i found during a project 
+
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
+
+class UserSignupSchema(BaseModel):
+    password: str
+    password_confirm: str
+
+    @field_validator("password_confirm")
+    def password_match(cls, v, info: ValidationInfo):
+        password = info.data.get('password')
+        if password != v:
+            raise ValueError("Passwords do not match")
+        return v
+
